@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "672556681637",
+    "project_id": "pro-f9a1dd41",
+    "storage_bucket": "pro-f9a1dd41.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672556681637:android:7db06fb488c4dad8c8804c",
+        "android_client_info": {
+          "package_name": "com.infinity.tv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "672556681637-suiuapvm917h4dsbnf32tojdukt6406k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJ9fPrtVlzFU2z93l7Q-vpcRPMsXdunHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "672556681637-suiuapvm917h4dsbnf32tojdukt6406k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
