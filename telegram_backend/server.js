@@ -177,7 +177,7 @@ function setupEventListeners() {
     if (!channelId) return;
 
     // Verify if channel is in our configuration
-    const configuredChannels = (process.env.DATABASE_CHANNELS || '').split(',');
+    const configuredChannels = (process.env.DATABASE_CHANNELS || process.env.DATABASE_CHANNEL || '').split(',');
     if (!configuredChannels.includes(channelId) && !configuredChannels.includes(`-100${channelId}`)) return;
 
     if (message.media && (message.media.document || message.media.video)) {
@@ -187,9 +187,8 @@ function setupEventListeners() {
   }, new NewMessage({}));
 }
 
-// 2. Index past database messages on startup
 async function autoIndexOnStartup() {
-  const configuredChannels = (process.env.DATABASE_CHANNELS || '').split(',');
+  const configuredChannels = (process.env.DATABASE_CHANNELS || process.env.DATABASE_CHANNEL || '').split(',');
   console.log("🔍 Auto-indexing configured channels:", configuredChannels);
 
   for (const channel of configuredChannels) {
