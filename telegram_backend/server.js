@@ -234,9 +234,120 @@ async function indexPastChannelMessages(channelId, limit = 200) {
   }
 }
 
-// ==========================================
-// 5. REST API ENDPOINTS
-// ==========================================
+// Root endpoint - Serving a beautiful premium status dashboard
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Infinity TV - Streaming Server Control Center</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body {
+          margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          background: #0f0f11;
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+        }
+        .container {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 24px;
+          padding: 40px;
+          text-align: center;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+          max-width: 480px;
+          width: 90%;
+          backdrop-filter: blur(20px);
+        }
+        .logo {
+          font-size: 3rem;
+          color: #ff3b30;
+          margin-bottom: 20px;
+          font-weight: bold;
+        }
+        h1 {
+          font-size: 1.8rem;
+          margin: 0 0 10px 0;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+        }
+        p {
+          color: #8e8e93;
+          margin: 0 0 30px 0;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(52, 199, 89, 0.1);
+          color: #34c759;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          border: 1px solid rgba(52, 199, 89, 0.2);
+          margin-bottom: 30px;
+        }
+        .details-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          padding-top: 25px;
+          text-align: left;
+        }
+        .detail-item {
+          font-size: 0.85rem;
+        }
+        .detail-label {
+          color: #8e8e93;
+          margin-bottom: 4px;
+        }
+        .detail-value {
+          font-weight: 600;
+          color: #ffffff;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="logo">∞</div>
+        <h1>Infinity TV</h1>
+        <p>Premium Telegram Auto-Indexing & Direct Playable Video Streaming Cloud Core Server is Online.</p>
+        <div class="badge">
+          <span style="font-size: 1.1rem;">●</span> Server Status: Active
+        </div>
+        <div class="details-grid">
+          <div class="detail-item">
+            <div class="detail-label">API Version</div>
+            <div class="detail-value">v1.5.0</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Database Connection</div>
+            <div class="detail-value">Firestore Connected</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Auto-Index Engine</div>
+            <div class="detail-value">9 Channels Ready</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Streaming Type</div>
+            <div class="detail-value">MP4 Range Seeking</div>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+});
 
 // Endpoint to fetch the dynamic app configuration (for Play Store cloaking)
 app.get('/config', async (req, res) => {
