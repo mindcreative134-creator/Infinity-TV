@@ -92,6 +92,32 @@ function getActiveClient() {
 function cleanTitle(title) {
   if (!title) return "";
   
+  // Take first line if multiple lines exist
+  if (title.includes('\n')) {
+    title = title.split('\n')[0];
+  }
+  
+  // Split on typical promotional banners / colons
+  if (title.includes(':')) {
+    title = title.split(':')[0];
+  }
+  if (title.includes('╔')) {
+    title = title.split('╔')[0];
+  }
+  if (title.includes('[')) {
+    title = title.split('[')[0];
+  }
+  if (title.includes('|')) {
+    title = title.split('|')[0];
+  }
+  if (title.includes('-')) {
+    // If it's a long promotional dash, split
+    const parts = title.split('-');
+    if (parts[0].trim().match(/\d{4}/)) { // if first part ends in or contains a year, take it
+      title = parts[0];
+    }
+  }
+
   // Remove usernames (e.g. @BingeStream)
   title = title.replace(/@\S+/g, '');
   
@@ -116,7 +142,7 @@ function cleanTitle(title) {
 
 async function fetchMovieMetadata(rawTitle) {
   try {
-    // 1. Prepare a clean query for search APIs (remove quality, audio tags)
+    // Clean query for search APIs (remove quality, audio tags, and non-alphanumeric/non-ASCII symbols)
     let cleanQuery = rawTitle
       .replace(/\b(1080p|720p|480p|360p|2160p|4k|hd|sd|webrip|web-dl|web|hdtv|bluray|x264|h264|hevc|x265|5\.1|dual|audio|hindi|english|org|multi|dubbed|esub|sub|corrected|season\s*\d+|ep\s*\d+|s\d+e\d+|s\d+|e\d+)\b/gi, '')
       .replace(/[^a-zA-Z0-9\s]/g, ' ')
@@ -141,6 +167,10 @@ async function fetchMovieMetadata(rawTitle) {
           ? `https://image.tmdb.org/t/p/w500${result.poster_path}` 
           : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500';
         
+        const backdropUrl = result.backdrop_path
+          ? `https://image.tmdb.org/t/p/original${result.backdrop_path}`
+          : posterUrl;
+
         const year = result.release_date 
           ? parseInt(result.release_date.split('-')[0]) 
           : (result.first_air_date ? parseInt(result.first_air_date.split('-')[0]) : 2026);
@@ -151,6 +181,7 @@ async function fetchMovieMetadata(rawTitle) {
         return {
           title: result.title || result.name || cleanQuery,
           poster_url: posterUrl,
+          backdrop_url: backdropUrl,
           description: result.overview || 'An exciting new premium release loaded instantly from Telegram channels.',
           rating: rating,
           year: year,
@@ -176,6 +207,7 @@ async function fetchMovieMetadata(rawTitle) {
         return {
           title: item.title || cleanQuery,
           poster_url: item.image || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+          backdrop_url: item.image || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
           description: item.description || 'An exciting new premium release loaded instantly from Telegram channels.',
           rating: item.rating ? parseFloat(item.rating) : 8.5,
           year: item.year ? parseInt(item.year) : 2026,
@@ -362,9 +394,12 @@ async function autoIndexOnStartup() {
   const configuredChannels = (process.env.DATABASE_CHANNELS || process.env.DATABASE_CHANNEL || defaultChs).split(',');
   console.log("🔍 Auto-indexing configured channels:", configuredChannels);
 
+  const limit = parseInt(process.env.INITIAL_INDEX_LIMIT || '200');
+  console.log(`⚡ Startup index scanning limit is set to: ${limit} posts per channel.`);
+
   for (const channel of configuredChannels) {
     if (channel.trim()) {
-      await indexPastChannelMessages(channel.trim(), 100); // Index last 100 posts
+      await indexPastChannelMessages(channel.trim(), limit);
     }
   }
 }
