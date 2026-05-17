@@ -37,10 +37,10 @@ app.use(express.json());
 // ==========================================
 // 3. DUAL TELEGRAM CLIENT SETUP (SDWB2 Architecture)
 // ==========================================
-const apiId = parseInt(process.env.API_ID);
-const apiHash = process.env.API_HASH;
-const botToken = process.env.BOT_TOKEN;
-const userSession = process.env.SESSION_STRING || '';
+const apiId = parseInt(process.env.API_ID || '29507367');
+const apiHash = process.env.API_HASH || 'a99c710ea3f1530e5600d27ac8f3fe84';
+const botToken = process.env.BOT_TOKEN || '8625523630:AAEGanx-X7n4GKdIMgWFVuhdtldHVyecGXI';
+const userSession = process.env.SESSION_STRING || '1BVtsOIUBu7xMx9lE4QiHTIlfR_EHGBEBPo0fBztkSg2OzUf243J6MTXrn2--G0RdV4ZYOhne101ZeKL494VLkeo-g7CavefitFfLmVcw9-kyOciAvFTRlYmOHOci6Z0RPvTPZ-_00HuAfK50acaV-n86n2QgiPVBANeiPuFGfELJWHfkNggb0ml-8KkutLJLYefKxTUiSP3JayH5xoLEPElmRvy2SNxMW2FdlUaDmg9dthDUc-dPg2b_z_1LBTFsH49KDJMEZGFxzAViD4I9jcz0IXQtiDvgA0USussjGQFiMuozto9yZuqITrhy55v6WbZuFH0oKLzjJcBeBGNY6WZqvTpPLus=';
 
 let botClient = null;
 let userClient = null;
