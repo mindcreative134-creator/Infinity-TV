@@ -829,7 +829,10 @@
             }
 
             const backendBase = "https://infinity-tv-a37n.onrender.com";
-            const streamUrl = `${backendBase}/stream/${fileId}`;
+            // Support both Telegram IDs/paths and direct custom HTTP/HTTPS streaming URLs!
+            const streamUrl = (fileId.startsWith("http://") || fileId.startsWith("https://"))
+                ? fileId
+                : `${backendBase}/stream/${fileId}`;
 
             try {
                 await addDoc(collection(db, "movies"), {

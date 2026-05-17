@@ -114,6 +114,82 @@ function cleanTitle(title) {
   return title.trim();
 }
 
+async function fetchMovieMetadata(rawTitle) {
+  try {
+    // 1. Prepare a clean query for search APIs (remove quality, audio tags)
+    let cleanQuery = rawTitle
+      .replace(/\b(1080p|720p|480p|360p|2160p|4k|hd|sd|webrip|web-dl|web|hdtv|bluray|x264|h264|hevc|x265|5\.1|dual|audio|hindi|english|org|multi|dubbed|esub|sub|corrected|season\s*\d+|ep\s*\d+|s\d+e\d+|s\d+|e\d+)\b/gi, '')
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanQuery) return null;
+
+    console.log(`🔍 Querying TMDB API for clean title: "${cleanQuery}"`);
+    const tmdbApiKey = '6abcb6bb99fb77f33c37016a28866ed2';
+    const tmdbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${tmdbApiKey}&query=${encodeURIComponent(cleanQuery)}&language=en-US`;
+
+    const res = await fetch(tmdbUrl);
+    if (res.ok) {
+      const searchData = await res.json();
+      if (searchData.results && searchData.results.length > 0) {
+        // Look for movie/tv type results with poster paths
+        const bestMatch = searchData.results.find(r => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path);
+        const result = bestMatch || searchData.results[0];
+
+        const posterUrl = result.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${result.poster_path}` 
+          : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500';
+        
+        const year = result.release_date 
+          ? parseInt(result.release_date.split('-')[0]) 
+          : (result.first_air_date ? parseInt(result.first_air_date.split('-')[0]) : 2026);
+        
+        const rating = result.vote_average ? parseFloat(result.vote_average.toFixed(1)) : 8.5;
+        const category = result.media_type === 'tv' ? 'Korean Drama' : 'Trending Movies';
+
+        return {
+          title: result.title || result.name || cleanQuery,
+          poster_url: posterUrl,
+          description: result.overview || 'An exciting new premium release loaded instantly from Telegram channels.',
+          rating: rating,
+          year: year,
+          category: category
+        };
+      }
+    }
+  } catch (err) {
+    console.error("⚠️ TMDB API fetch failed:", err.message);
+  }
+
+  // 2. Fallback to IMDB Worker API
+  try {
+    let cleanQuery = rawTitle.replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+    console.log(`🔍 Querying IMDB Worker fallback: "${cleanQuery}"`);
+    const imdbUrl = `https://imdbapi.kr562481.workers.dev/?q=${encodeURIComponent(cleanQuery)}`;
+    
+    const res = await fetch(imdbUrl);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.results && data.results.length > 0) {
+        const item = data.results[0];
+        return {
+          title: item.title || cleanQuery,
+          poster_url: item.image || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+          description: item.description || 'An exciting new premium release loaded instantly from Telegram channels.',
+          rating: item.rating ? parseFloat(item.rating) : 8.5,
+          year: item.year ? parseInt(item.year) : 2026,
+          category: 'Trending Movies'
+        };
+      }
+    }
+  } catch (err) {
+    console.error("⚠️ IMDB Worker fallback failed:", err.message);
+  }
+
+  return null;
+}
+
 async function processAndIndexMessage(message, channelId) {
   try {
     const messageId = message.id;
@@ -146,11 +222,17 @@ async function processAndIndexMessage(message, channelId) {
     const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
     const streamUrl = `${backendUrl}/stream/${channelId}/${messageId}`;
 
-    // Upload to Firestore
+    // Query TMDB or IMDB fallback metadata!
+    const meta = await fetchMovieMetadata(fileName) || {};
+
+    // Upload to Firestore with automatic media hydration
     await db.collection('movies').add({
-      title: fileName,
-      category: 'Trending Movies',
-      poster_url: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500', // Default high quality placeholder
+      title: meta.title || fileName,
+      category: meta.category || 'Trending Movies',
+      poster_url: meta.poster_url || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+      description: meta.description || 'An exciting new premium release loaded instantly from Telegram channels.',
+      rating: meta.rating || 8.5,
+      year: meta.year || 2026,
       stream_url: streamUrl,
       telegram_channel_id: String(channelId),
       telegram_message_id: messageId,
@@ -158,7 +240,7 @@ async function processAndIndexMessage(message, channelId) {
       is_active: true
     });
 
-    console.log(`✅ Automatically Indexed: "${fileName}" -> Firestore`);
+    console.log(`✅ Automatically Indexed & Hydrated: "${meta.title || fileName}" -> Firestore`);
   } catch (err) {
     console.error("❌ Error indexing message:", err.message);
   }
