@@ -190,6 +190,35 @@ async function fetchMovieMetadata(rawTitle) {
   return null;
 }
 
+function parseQuality(fileName) {
+  const name = fileName.toLowerCase();
+  if (name.includes('4k') || name.includes('2160p')) return '4K UHD';
+  if (name.includes('1080p')) return '1080p Full HD';
+  if (name.includes('720p')) return '720p HD';
+  if (name.includes('480p')) return '480p';
+  if (name.includes('360p')) return '360p';
+  if (name.includes('bluray')) return 'BluRay HD';
+  if (name.includes('webrip') || name.includes('web-dl')) return 'WEB-DL';
+  if (name.includes('hdrip')) return 'HDRip';
+  return 'HD Quality';
+}
+
+function parseLanguage(fileName) {
+  const name = fileName.toLowerCase();
+  const langs = [];
+  if (name.includes('hindi') || name.includes('hin')) langs.push('Hindi');
+  if (name.includes('english') || name.includes('eng')) langs.push('English');
+  if (name.includes('tamil') || name.includes('tam')) langs.push('Tamil');
+  if (name.includes('telugu') || name.includes('tel')) langs.push('Telugu');
+  if (name.includes('bengali') || name.includes('ben')) langs.push('Bengali');
+  if (name.includes('marathi')) langs.push('Marathi');
+  
+  if (langs.length > 1) return `Dual [${langs.join('/')}]`;
+  if (langs.length === 1) return langs[0];
+  if (name.includes('dual') || name.includes('multi')) return 'Dual Audio';
+  return 'English';
+}
+
 async function processAndIndexMessage(message, channelId) {
   try {
     const messageId = message.id;
@@ -224,23 +253,81 @@ async function processAndIndexMessage(message, channelId) {
 
     // Query TMDB or IMDB fallback metadata!
     const meta = await fetchMovieMetadata(fileName) || {};
+    const movieTitle = meta.title || fileName;
 
-    // Upload to Firestore with automatic media hydration
-    await db.collection('movies').add({
-      title: meta.title || fileName,
-      category: meta.category || 'Trending Movies',
-      poster_url: meta.poster_url || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
-      description: meta.description || 'An exciting new premium release loaded instantly from Telegram channels.',
-      rating: meta.rating || 8.5,
-      year: meta.year || 2026,
-      stream_url: streamUrl,
+    // Parse quality and language tags from original file name
+    const parsedQuality = parseQuality(fileName);
+    const parsedLanguage = parseLanguage(fileName);
+    const newStream = {
+      url: streamUrl,
+      quality: parsedQuality,
+      language: parsedLanguage,
+      file_name: fileName,
       telegram_channel_id: String(channelId),
       telegram_message_id: messageId,
-      created_at: admin.firestore.FieldValue.serverTimestamp(),
-      is_active: true
-    });
+      added_at: new Date().toISOString()
+    };
 
-    console.log(`✅ Automatically Indexed & Hydrated: "${meta.title || fileName}" -> Firestore`);
+    // Grouping Strategy: Check if a movie with the exact same title already exists in Firestore!
+    const movieQuery = await db.collection('movies')
+      .where('title', '==', movieTitle)
+      .get();
+
+    if (!movieQuery.empty) {
+      // Grouping: Append new stream quality/language to the existing movie document!
+      const movieDoc = movieQuery.docs[0];
+      const movieData = movieDoc.data();
+      
+      let streams = movieData.streams || [];
+      
+      // Migrate legacy documents that only have a single stream_url field
+      if (streams.length === 0 && movieData.stream_url) {
+        streams.push({
+          url: movieData.stream_url,
+          quality: parseQuality(movieData.title || ''),
+          language: parseLanguage(movieData.title || ''),
+          file_name: movieData.title || 'Source 1',
+          telegram_channel_id: movieData.telegram_channel_id || '',
+          telegram_message_id: movieData.telegram_message_id || '',
+          added_at: new Date().toISOString()
+        });
+      }
+
+      // Check if this specific stream URL is already registered
+      const alreadyHasStream = streams.some(s => s.url === streamUrl);
+      if (!alreadyHasStream) {
+        streams.push(newStream);
+        await movieDoc.ref.update({
+          streams: streams,
+          // Enrich with best TMDB details if available
+          poster_url: meta.poster_url || movieData.poster_url || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+          description: meta.description || movieData.description || '',
+          rating: meta.rating || movieData.rating || 8.5,
+          year: meta.year || movieData.year || 2026,
+          category: meta.category || movieData.category || 'Trending Movies'
+        });
+        console.log(`✅ Grouped new Stream to existing movie: "${movieTitle}" [Quality: ${parsedQuality}, Language: ${parsedLanguage}]`);
+      } else {
+        console.log(`⚠️ Stream already present for: "${movieTitle}"`);
+      }
+    } else {
+      // First-time insertion: Store movie document with streams array
+      await db.collection('movies').add({
+        title: movieTitle,
+        category: meta.category || 'Trending Movies',
+        poster_url: meta.poster_url || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+        description: meta.description || 'An exciting new premium release loaded instantly from Telegram channels.',
+        rating: meta.rating || 8.5,
+        year: meta.year || 2026,
+        stream_url: streamUrl, // Backwards compatibility for legacy app seeking
+        streams: [newStream],
+        telegram_channel_id: String(channelId),
+        telegram_message_id: messageId,
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+        is_active: true
+      });
+      console.log(`✅ Dynamic Index & First Source Hydration: "${movieTitle}" -> Firestore [Quality: ${parsedQuality}, Language: ${parsedLanguage}]`);
+    }
   } catch (err) {
     console.error("❌ Error indexing message:", err.message);
   }
