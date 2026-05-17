@@ -177,7 +177,8 @@ function setupEventListeners() {
     if (!channelId) return;
 
     // Verify if channel is in our configuration
-    const configuredChannels = (process.env.DATABASE_CHANNELS || process.env.DATABASE_CHANNEL || '').split(',');
+    const defaultChs = '-1002740721681,-1002423454296,-1002185819000,-1002360632501,-1002257290028,-1002719303311,-1002368981263,-1002440315747,-1002903580895';
+    const configuredChannels = (process.env.DATABASE_CHANNELS || process.env.DATABASE_CHANNEL || defaultChs).split(',');
     if (!configuredChannels.includes(channelId) && !configuredChannels.includes(`-100${channelId}`)) return;
 
     if (message.media && (message.media.document || message.media.video)) {
@@ -188,7 +189,8 @@ function setupEventListeners() {
 }
 
 async function autoIndexOnStartup() {
-  const configuredChannels = (process.env.DATABASE_CHANNELS || process.env.DATABASE_CHANNEL || '').split(',');
+  const defaultChs = '-1002740721681,-1002423454296,-1002185819000,-1002360632501,-1002257290028,-1002719303311,-1002368981263,-1002440315747,-1002903580895';
+  const configuredChannels = (process.env.DATABASE_CHANNELS || process.env.DATABASE_CHANNEL || defaultChs).split(',');
   console.log("🔍 Auto-indexing configured channels:", configuredChannels);
 
   for (const channel of configuredChannels) {
