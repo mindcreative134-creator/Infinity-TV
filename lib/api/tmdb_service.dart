@@ -161,4 +161,6 @@ class TMDBService {
       return _getMockMovies();
     }
   }
+
+  void clearCache() {}
 }
