@@ -13,7 +13,7 @@ class RemoteConfigService {
   static const String _backendUrl = 'https://infinity-tv-a37n.onrender.com';
 
   // Core Cloak Switch & Update Toggles
-  bool _isMovieAppActive = false;
+  bool _isMovieAppActive = true;
   bool _isUpdateAvailable = false;
 
   // App Theme & Branding
@@ -40,7 +40,7 @@ class RemoteConfigService {
         final Map<String, dynamic> data = json.decode(response.body);
         
         // Parsing Core configs
-        _isMovieAppActive = data['is_movie_app_active'] ?? false;
+        _isMovieAppActive = data['is_movie_app_active'] ?? true;
         _isUpdateAvailable = data['is_update_available'] ?? false;
 
         // Parsing Branding configs

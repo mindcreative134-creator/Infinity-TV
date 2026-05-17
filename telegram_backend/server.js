@@ -559,7 +559,7 @@ app.get('/config', async (req, res) => {
     const doc = await db.collection('config').doc('app_control').get();
     if (!doc.exists) {
       return res.json({
-        is_movie_app_active: false,
+        is_movie_app_active: true,
         banner_message: 'Welcome to Infinity TV!',
         featured_stream: '',
         is_update_available: false

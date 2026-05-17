@@ -35,7 +35,7 @@ class TMDBService {
   Future<List<Movie>> fetchTrendingMovies() async {
     try {
       // 1. Try backend custom Firestore movies first
-      final res = await http.get(Uri.parse('$_backendUrl/movies?category=Trending%20Movies')).timeout(Duration(seconds: 8));
+      final res = await http.get(Uri.parse('$_backendUrl/movies')).timeout(Duration(seconds: 8));
       if (res.statusCode == 200) {
         final list = json.decode(res.body) as List;
         if (list.isNotEmpty) {
