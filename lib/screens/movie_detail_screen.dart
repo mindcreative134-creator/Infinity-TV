@@ -108,14 +108,26 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () async {
-                        final query = Uri.encodeComponent('${widget.movie.title} trailer');
-                        final url = Uri.parse('https://www.youtube.com/results?search_query=$query');
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        if (widget.movie.streamUrl.isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PlayerScreen(
+                                url: widget.movie.streamUrl,
+                                title: widget.movie.title,
+                              ),
+                            ),
+                          );
+                        } else {
+                          final query = Uri.encodeComponent('${widget.movie.title} trailer');
+                          final url = Uri.parse('https://www.youtube.com/results?search_query=$query');
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url, mode: LaunchMode.externalApplication);
+                          }
                         }
                       },
                       icon: const Icon(Icons.play_arrow, color: Colors.black),
-                      label: const Text('WATCH TRAILER', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                      label: Text(widget.movie.streamUrl.isNotEmpty ? 'PLAY MOVIE' : 'WATCH TRAILER', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),

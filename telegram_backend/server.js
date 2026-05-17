@@ -572,6 +572,62 @@ app.get('/config', async (req, res) => {
   }
 });
 
+function getStableId(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+}
+
+// Expose Firestore custom catalog to Flutter Mobile App
+app.get('/movies', async (req, res) => {
+  try {
+    const searchQuery = req.query.search || req.query.query || '';
+    const categoryQuery = req.query.category || '';
+
+    const snapshot = await db.collection('movies').limit(300).get();
+    let list = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const stableId = getStableId(doc.id);
+      
+      const title = data.title || doc.id;
+      const desc = data.description || 'An exciting new premium release loaded instantly from Telegram channels.';
+
+      // Filter locally for case-insensitive match
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (!title.toLowerCase().includes(q) && !desc.toLowerCase().includes(q)) {
+          return;
+        }
+      }
+      
+      if (categoryQuery) {
+        if ((data.category || '').toLowerCase() !== categoryQuery.toLowerCase()) {
+          return;
+        }
+      }
+
+      list.push({
+        id: stableId,
+        title: title,
+        overview: desc,
+        poster_path: data.poster_url || '',
+        backdrop_path: data.backdrop_url || data.poster_url || '',
+        vote_average: parseFloat(data.rating || 8.5),
+        release_date: (data.year || 2026).toString(),
+        stream_url: data.stream_url || ''
+      });
+    });
+    
+    res.json(list);
+  } catch (err) {
+    console.error('❌ Failed to fetch movies catalog:', err.message);
+    res.status(500).json({ error: "Failed to load movies catalog" });
+  }
+});
+
 // Route to manually trigger indexing of a channel
 app.post('/index-channel', async (req, res) => {
   const { channel_id, limit } = req.body;

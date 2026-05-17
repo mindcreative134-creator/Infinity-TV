@@ -6,6 +6,7 @@ class Movie {
   final String backdropPath;
   final double voteAverage;
   final String releaseDate;
+  final String streamUrl;
 
   Movie({
     required this.id,
@@ -15,6 +16,7 @@ class Movie {
     required this.backdropPath,
     required this.voteAverage,
     required this.releaseDate,
+    required this.streamUrl,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
@@ -26,9 +28,10 @@ class Movie {
       backdropPath: json['backdrop_path'] ?? '',
       voteAverage: (json['vote_average'] ?? 0.0).toDouble(),
       releaseDate: json['release_date'] ?? json['first_air_date'] ?? '',
+      streamUrl: json['stream_url'] ?? '',
     );
   }
 
-  String get fullPosterPath => 'https://image.tmdb.org/t/p/w500$posterPath';
-  String get fullBackdropPath => 'https://image.tmdb.org/t/p/original$backdropPath';
+  String get fullPosterPath => posterPath.startsWith('http') ? posterPath : 'https://image.tmdb.org/t/p/w500$posterPath';
+  String get fullBackdropPath => backdropPath.startsWith('http') ? backdropPath : 'https://image.tmdb.org/t/p/original$backdropPath';
 }
