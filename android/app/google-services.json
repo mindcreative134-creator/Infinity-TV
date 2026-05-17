@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "672556681637",
+    "firebase_url": "https://pro-f9a1dd41-default-rtdb.firebaseio.com",
     "project_id": "pro-f9a1dd41",
     "storage_bucket": "pro-f9a1dd41.firebasestorage.app"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "672556681637-26553ejc67onvtigisp583lqs9mhadqr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.infinity.tv",
+            "certificate_hash": "2afccb41e28ac8238ebfaecd715e2f484feecd0f"
+          }
+        },
         {
           "client_id": "672556681637-suiuapvm917h4dsbnf32tojdukt6406k.apps.googleusercontent.com",
           "client_type": 3

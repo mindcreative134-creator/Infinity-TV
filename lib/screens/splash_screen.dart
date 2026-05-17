@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'main_screen.dart';
+import 'fake_player_screen.dart';
+import '../services/remote_config_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,10 +37,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
+        bool isActive = RemoteConfigService().isMovieAppActive;
+        
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (_, _, _) => const MainScreen(),
+            pageBuilder: (_, _, _) => isActive ? const MainScreen() : const FakePlayerScreen(),
             transitionsBuilder: (_, a, _, c) => FadeTransition(opacity: a, child: c),
             transitionDuration: const Duration(milliseconds: 600),
           ),
