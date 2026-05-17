@@ -10,7 +10,7 @@ class RemoteConfigService {
   // ========================================================
   // ⚡ YOUR BACKEND URL (Change this to your local or host URL)
   // ========================================================
-  static const String _backendUrl = 'https://screeching-cherye-filmy4uhd-b60bef55.koyeb.app';
+  static const String _backendUrl = 'https://infinity-tv-a37n.onrender.com';
 
   // Core Cloak Switch & Update Toggles
   bool _isMovieAppActive = false;

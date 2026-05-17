@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 // ============================================================
 
 enum MediaSource {
-  filmy4u('https://screeching-cherye-filmy4uhd-b60bef55.koyeb.app', 'Filmy4uHD');
+  filmy4u('https://infinity-tv-a37n.onrender.com', 'Filmy4uHD');
 
   final String url;
   final String name;
