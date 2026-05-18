@@ -8,12 +8,12 @@ yarn-error.log*
 
 # Secret Keys & Environment
 .env
-**/serviceAccountKey.json
 **/google-services.json
 **/*.json
 !**/pubspec.json
 !**/package.json
 !**/package-lock.json
+!**/serviceAccountKey.json
 
 # Scratch check files
 **/check_db.js
