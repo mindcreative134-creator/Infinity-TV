@@ -581,7 +581,7 @@ function getStableId(str) {
 }
 
 // Expose Firestore custom catalog to Flutter Mobile App
-app.get('/api/movies', async (req, res) => {
+app.get(['/api/movies', '/api/movies/'], async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.page_size) || 10;
@@ -605,7 +605,7 @@ app.get('/api/movies', async (req, res) => {
   }
 });
 
-app.get('/api/tvshows', async (req, res) => {
+app.get(['/api/tvshows', '/api/tvshows/'], async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.page_size) || 10;
@@ -630,7 +630,7 @@ app.get('/api/tvshows', async (req, res) => {
   }
 });
 
-app.get('/api/id/:id', async (req, res) => {
+app.get(['/api/id/:id', '/api/id/:id/'], async (req, res) => {
   try {
     // Treat id as document ID since TMDB ID isn't directly stored right now
     const docRef = db.collection('movies').doc(req.params.id);
@@ -647,7 +647,7 @@ app.get('/api/id/:id', async (req, res) => {
   }
 });
 
-app.get('/api/similar', async (req, res) => {
+app.get(['/api/similar', '/api/similar/'], async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.page_size) || 10;
@@ -670,7 +670,7 @@ app.get('/api/similar', async (req, res) => {
   }
 });
 
-app.get('/api/search', async (req, res) => {
+app.get(['/api/search', '/api/search/'], async (req, res) => {
   try {
     const query = req.query.query || '';
     const page = parseInt(req.query.page) || 1;
