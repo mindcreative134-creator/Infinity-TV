@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const fetch = require('node-fetch');
+// Use native fetch instead of requiring node-fetch
 
 // Initialize Firebase Admin SDK
 const serviceAccount = require('./serviceAccountKey.json');
@@ -45,6 +45,24 @@ function cleanTitle(title) {
   return title.trim();
 }
 
+const https = require('https');
+
+function httpsGet(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => data += chunk);
+      res.on('end', () => {
+        try {
+          resolve({ ok: res.statusCode === 200, json: () => Promise.resolve(JSON.parse(data)) });
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on('error', (err) => reject(err));
+  });
+}
+
 async function fetchMovieMetadata(rawTitle) {
   try {
     let cleanQuery = rawTitle
@@ -58,7 +76,7 @@ async function fetchMovieMetadata(rawTitle) {
     const tmdbApiKey = '6abcb6bb99fb77f33c37016a28866ed2';
     const tmdbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${tmdbApiKey}&query=${encodeURIComponent(cleanQuery)}&language=en-US`;
 
-    const res = await fetch(tmdbUrl);
+    const res = await httpsGet(tmdbUrl);
     if (res.ok) {
       const searchData = await res.json();
       if (searchData.results && searchData.results.length > 0) {
@@ -94,6 +112,33 @@ async function fetchMovieMetadata(rawTitle) {
   } catch (err) {
     console.error("⚠️ TMDB API fetch failed:", err.message);
   }
+
+  // Fallback to IMDB Worker API
+  try {
+    let cleanQuery = rawTitle.replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+    console.log(`🔍 Querying IMDB Worker fallback: "${cleanQuery}"`);
+    const imdbUrl = `https://imdbapi.kr562481.workers.dev/?q=${encodeURIComponent(cleanQuery)}`;
+    
+    const res = await httpsGet(imdbUrl);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.results && data.results.length > 0) {
+        const item = data.results[0];
+        return {
+          title: item.title || cleanQuery,
+          poster_url: item.image || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+          backdrop_url: item.image || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+          description: item.description || 'An exciting new premium release loaded instantly from Telegram channels.',
+          rating: item.rating ? parseFloat(item.rating) : 8.5,
+          year: item.year ? parseInt(item.year) : 2026,
+          category: 'Trending Movies'
+        };
+      }
+    }
+  } catch (err) {
+    console.error("⚠️ IMDB Worker fallback failed:", err.message);
+  }
+
   return null;
 }
 

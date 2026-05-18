@@ -67,7 +67,7 @@ class MediaSearchDelegate extends SearchDelegate<Filmy4uHDMedia?> {
       future: _service.search(query),
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFFF3B30)));
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFF2B04E)));
         }
 
         final items = snap.data ?? [];

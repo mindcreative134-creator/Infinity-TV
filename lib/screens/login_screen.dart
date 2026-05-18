@@ -51,9 +51,9 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF3B30).withValues(alpha: 0.1),
+                color: const Color(0xFFF2B04E).withValues(alpha: 0.1),
               ),
-              child: const Icon(Icons.movie_rounded, color: Color(0xFFFF3B30), size: 80),
+              child: const Icon(Icons.movie_rounded, color: Color(0xFFF2B04E), size: 80),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const Spacer(),
             
             if (_isLoading)
-              const CircularProgressIndicator(color: Color(0xFFFF3B30))
+              const CircularProgressIndicator(color: Color(0xFFF2B04E))
             else ...[
               // Google Sign In Button
               _buildSocialButton(

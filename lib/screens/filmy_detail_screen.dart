@@ -82,7 +82,7 @@ class _FilmyDetailScreenState extends State<FilmyDetailScreen> {
           children: [
             Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
-            Text(file.quality, style: const TextStyle(color: Color(0xFFFF3B30), fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(file.quality, style: const TextStyle(color: Color(0xFFF2B04E), fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             Text(file.name.split('\\n').first, style: const TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center, maxLines: 1),
             const SizedBox(height: 24),
@@ -271,7 +271,7 @@ class _FilmyDetailScreenState extends State<FilmyDetailScreen> {
       );
 
   Widget _sectionHeader(String title) => Row(children: [
-        Container(width: 3, height: 18, decoration: BoxDecoration(color: const Color(0xFFFF3B30), borderRadius: BorderRadius.circular(2))),
+        Container(width: 3, height: 18, decoration: BoxDecoration(color: const Color(0xFFF2B04E), borderRadius: BorderRadius.circular(2))),
         const SizedBox(width: 10),
         Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
       ]);
@@ -330,7 +330,7 @@ class _FilmyDetailScreenState extends State<FilmyDetailScreen> {
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFFFF3B30) : const Color(0xFF1E1E1E),
+                  color: isSelected ? const Color(0xFFF2B04E) : const Color(0xFF1E1E1E),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -358,8 +358,8 @@ class _FilmyDetailScreenState extends State<FilmyDetailScreen> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           leading: Container(
             width: 42, height: 42,
-            decoration: BoxDecoration(color: const Color(0xFFFF3B30).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.play_arrow_rounded, color: Color(0xFFFF3B30), size: 26),
+            decoration: BoxDecoration(color: const Color(0xFFF2B04E).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.play_arrow_rounded, color: Color(0xFFF2B04E), size: 26),
           ),
           title: Text(
             file.name.isNotEmpty ? file.name.split('\\n').first : 'Watch Now',
@@ -387,14 +387,14 @@ class _FilmyDetailScreenState extends State<FilmyDetailScreen> {
                 onTap: () => _openTelegram(tmdbId),
               )
             : ExpansionTile(
-                iconColor: const Color(0xFFFF3B30),
+                iconColor: const Color(0xFFF2B04E),
                 collapsedIconColor: Colors.white54,
                 title: Text(
                   'Ep ${ep.episodeNumber}: ${ep.title}',
                   style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
                 children: ep.telegram.map((f) => ListTile(
-                  leading: const Icon(Icons.play_circle_fill_rounded, color: Color(0xFFFF3B30), size: 28),
+                  leading: const Icon(Icons.play_circle_fill_rounded, color: Color(0xFFF2B04E), size: 28),
                   title: Text(f.name.split('\\n').first, style: const TextStyle(color: Colors.white, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                   subtitle: Row(children: [_qualityBadge(f.quality), const SizedBox(width: 6), if (f.size.isNotEmpty) Text(f.size, style: const TextStyle(color: Colors.grey, fontSize: 11))]),
                   trailing: const Icon(Icons.more_vert_rounded, color: Colors.white54, size: 20),

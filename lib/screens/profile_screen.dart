@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         CircleAvatar(
           radius: 50,
           backgroundImage: user.photoURL != null ? NetworkImage(user.photoURL!) : null,
-          backgroundColor: const Color(0xFFFF3B30),
+          backgroundColor: const Color(0xFFF2B04E),
           child: user.photoURL == null
               ? Text(user.displayName?[0] ?? 'U', style: const TextStyle(fontSize: 32, color: Colors.white))
               : null,
@@ -98,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ElevatedButton(
           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF3B30),
+            backgroundColor: const Color(0xFFF2B04E),
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             minimumSize: const Size(double.infinity, 50),
@@ -123,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _menuTile(IconData icon, String title) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFFFF3B30)),
+      leading: Icon(icon, color: const Color(0xFFF2B04E)),
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white24),
       onTap: () {},

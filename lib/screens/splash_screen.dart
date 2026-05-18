@@ -78,11 +78,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFFF3B30), Color(0xFF8B1A15)],
+                      colors: [Color(0xFFF2B04E), Color(0xFF8B1A15)],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF3B30).withValues(alpha: 0.4),
+                        color: const Color(0xFFF2B04E).withValues(alpha: 0.4),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      const Color(0xFFFF3B30).withValues(alpha: 0.8),
+                      const Color(0xFFF2B04E).withValues(alpha: 0.8),
                     ),
                   ),
                 ),

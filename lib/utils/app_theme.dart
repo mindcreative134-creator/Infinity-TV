@@ -5,13 +5,13 @@ class AppTheme {
   // Premium Dark OTT Color Palette
   static const Color background = Color(0xFF0A0A0A);
   static const Color cardBg = Color(0xFF151515);
-  static const Color accentRed = Color(0xFFFF3B30);
-  static const Color accentRedDark = Color(0xFFCC2A22);
+  static const Color accentGold = Color(0xFFF2B04E);
+  static const Color accentGoldDark = Color(0xFFD99A3A);
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Color(0xFFAAAAAA);
   static const Color divider = Color(0xFF2A2A2A);
   static const Color chipBg = Color(0xFF1E1E1E);
-  static const Color chipSelected = Color(0xFFFF3B30);
+  static const Color chipSelected = Color(0xFFF2B04E);
 
   // Gradients
   static const LinearGradient bannerGradient = LinearGradient(
@@ -31,17 +31,17 @@ class AppTheme {
   static const LinearGradient drawerGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFF3B30), Color(0xFF8B1A15)],
+    colors: [Color(0xFFF2B04E), Color(0xFFD99A3A)],
   );
 
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    primaryColor: accentRed,
+    primaryColor: accentGold,
     scaffoldBackgroundColor: background,
     colorScheme: const ColorScheme.dark(
-      primary: accentRed,
-      secondary: accentRedDark,
+      primary: accentGold,
+      secondary: accentGoldDark,
       surface: cardBg,
     ),
     appBarTheme: AppBarTheme(
@@ -71,7 +71,7 @@ class AppTheme {
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Color(0xFF0F0F0F),
-      selectedItemColor: accentRed,
+      selectedItemColor: accentGold,
       unselectedItemColor: Color(0xFF666666),
       type: BottomNavigationBarType.fixed,
       elevation: 0,

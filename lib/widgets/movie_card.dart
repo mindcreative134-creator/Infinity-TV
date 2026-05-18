@@ -101,7 +101,7 @@ class MovieCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF3B30).withValues(alpha: 0.9),
+                      color: const Color(0xFFF2B04E).withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Row(
@@ -169,7 +169,7 @@ class MovieCard extends StatelessWidget {
                   ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                   : null,
               strokeWidth: 2,
-              color: const Color(0xFFFF3B30),
+              color: const Color(0xFFF2B04E),
             ),
           ),
         );

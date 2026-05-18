@@ -32,7 +32,7 @@ class FakePlayerScreen extends StatelessWidget {
               icon: const Icon(Icons.folder_open),
               label: const Text('Open Gallery'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF3B30),
+                backgroundColor: const Color(0xFFF2B04E),
                 foregroundColor: Colors.white,
               ),
             ),

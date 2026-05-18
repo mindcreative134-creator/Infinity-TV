@@ -76,7 +76,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        color: const Color(0xFFFF3B30),
+        color: const Color(0xFFF2B04E),
         backgroundColor: const Color(0xFF1A1A1A),
         child: _series.isEmpty && _loading
             ? _shimmerGrid()
@@ -110,7 +110,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: _refresh,
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF3B30)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF2B04E)),
             child: const Text('Retry'),
           ),
         ]),

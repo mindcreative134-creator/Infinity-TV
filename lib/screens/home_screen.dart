@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
-import '../api/tmdb_service.dart';
-import '../models/movie_model.dart';
-import 'movie_detail_screen.dart';
-import 'search_delegate.dart';
+import '../api/filmy4uhd_service.dart';
+import 'filmy_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,10 +12,19 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _service = TMDBService();
-  late Future<List<Movie>> _trending;
-  late Future<List<Movie>> _popular;
-  late Future<List<Movie>> _topRated;
+  final _service = Filmy4uHDService();
+  late Future<List<Filmy4uHDMedia>> _trending;
+  late Future<List<Filmy4uHDMedia>> _popular;
+
+  final List<String> _tabs = ['Home', 'Shows', 'Movie', 'Anime', 'Shorts'];
+  String _selectedTab = 'Home';
+  final _searchCtrl = TextEditingController();
+
+  final List<Map<String, dynamic>> _languages = [
+    {'name': 'Hindi', 'color': const Color(0xFFF2B04E), 'image': 'https://image.tmdb.org/t/p/w200/nJUHX3XL1jMkk8honUZnUmudFb9.jpg'}, // Example image
+    {'name': 'Tamil', 'color': const Color(0xFFE5C06A), 'image': 'https://image.tmdb.org/t/p/w200/nJUHX3XL1jMkk8honUZnUmudFb9.jpg'},
+    {'name': 'Telugu', 'color': const Color(0xFF4CAF50), 'image': 'https://image.tmdb.org/t/p/w200/nJUHX3XL1jMkk8honUZnUmudFb9.jpg'},
+  ];
 
   @override
   void initState() {
@@ -25,201 +33,329 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _load() => setState(() {
-        _trending = _service.fetchTrendingMovies();
-        _popular = _service.fetchPopularMovies();
-        _topRated = _service.fetchTopRatedMovies();
+        _trending = _service.getTrending();
+        _popular = _service.getLatestMovies();
       });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: const Color(0xFF15151A),
       body: RefreshIndicator(
         onRefresh: () async { _service.clearCache(); _load(); },
-        color: const Color(0xFFFF3B30),
-        backgroundColor: const Color(0xFF1A1A1A),
-        child: CustomScrollView(
+        color: const Color(0xFFF2B04E),
+        backgroundColor: const Color(0xFF222228),
+        child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          slivers: [
-            _appBar(),
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _section('🔥 Trending', null),
-                  _heroSlider(),
-                  _section('🎬 Popular Movies', null),
-                  _horizontalList(_popular),
-                  _section('⭐ Top Rated', null),
-                  _horizontalList(_topRated),
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ),
-          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTopBar(),
+              _buildHeroSection(),
+              _sectionTitle('Explore In Your Language'),
+              _buildLanguageCards(),
+              _sectionTitle('Lokpriya Filmein Dekhein'),
+              _buildHorizontalList(_popular),
+              const SizedBox(height: 30),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  SliverAppBar _appBar() => SliverAppBar(
-        floating: true,
-        backgroundColor: const Color(0xFF0A0A0A),
-        elevation: 0,
-        title: Row(children: [
-          RichText(text: const TextSpan(children: [
-            TextSpan(text: 'INFINITY', style: TextStyle(color: Color(0xFFFF3B30), fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-            TextSpan(text: ' TV', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
-          ])),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.search_rounded, color: Colors.white),
-            onPressed: () => showSearch(context: context, delegate: MediaSearchDelegate()),
-          ),
-        ]),
-      );
-
-  Widget _heroSlider() => FutureBuilder<List<Movie>>(
-        future: _trending,
-        builder: (context, snap) {
-          if (!snap.hasData) return _shimmerRect(height: 200);
-          final items = snap.data!.take(5).toList();
-          if (items.isEmpty) return const SizedBox(height: 200);
-          return SizedBox(
-            height: 200,
-            child: PageView.builder(
-              itemCount: items.length,
-              itemBuilder: (_, i) => _heroCard(items[i]),
+  Widget _buildTopBar() {
+    return Container(
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 8, left: 16, right: 16, bottom: 8),
+      child: Column(
+        children: [
+          Container(
+            height: 40,
+            decoration: BoxDecoration(color: const Color(0xFF222228), borderRadius: BorderRadius.circular(20)),
+            child: TextField(
+              controller: _searchCtrl,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              cursorColor: const Color(0xFFF2B04E),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey, size: 20),
+                hintText: 'Search...',
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 10),
+              ),
             ),
-          );
-        },
-      );
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 30,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _tabs.length,
+              itemBuilder: (ctx, i) {
+                final tab = _tabs[i];
+                final isSel = tab == _selectedTab;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedTab = tab),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 20),
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          tab,
+                          style: TextStyle(
+                            color: isSel ? Colors.white : Colors.grey,
+                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 14,
+                          ),
+                        ),
+                        if (isSel)
+                          Container(margin: const EdgeInsets.only(top: 4), width: 20, height: 2, color: const Color(0xFFF2B04E)),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  Widget _heroCard(Movie m) => GestureDetector(
-        onTap: () => _goDetail(m),
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(fit: StackFit.expand, children: [
-              m.backdropPath != null
-                  ? Image.network('https://image.tmdb.org/t/p/w500${m.backdropPath}', fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: const Color(0xFF1A1A1A)))
-                  : Container(color: const Color(0xFF1A1A1A)),
+  Widget _buildHeroSection() {
+    return FutureBuilder<List<Filmy4uHDMedia>>(
+      future: _trending,
+      builder: (context, snap) {
+        if (!snap.hasData) return _shimmerHero();
+        final items = snap.data!.toList();
+        if (items.isEmpty) return const SizedBox(height: 350);
+        final m = items.first; // Top trending
+
+        return SizedBox(
+          height: 400,
+          width: double.infinity,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CachedNetworkImage(
+                imageUrl: m.poster.isNotEmpty ? m.poster : m.backdrop,
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => Container(color: Colors.black26),
+              ),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [Colors.black.withValues(alpha: 0.9), Colors.transparent],
+                    colors: [const Color(0xFF15151A), Colors.transparent],
+                    stops: const [0.0, 0.4],
                   ),
                 ),
               ),
               Positioned(
-                bottom: 16, left: 16, right: 16,
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(m.title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  Row(children: [
-                    const Icon(Icons.star_rounded, color: Color(0xFFFF3B30), size: 14),
-                    const SizedBox(width: 4),
-                    Text(m.voteAverage.toStringAsFixed(1), style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                    const SizedBox(width: 10),
-                    Text(m.releaseDate.split('-')[0], style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                  ]),
-                ]),
+                bottom: 20, left: 16, right: 16,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _goDetail(m),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF2B04E),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.play_arrow_rounded, color: Colors.black),
+                        label: const Text('PLAY', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF333333),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.add_rounded, color: Colors.white),
+                        label: const Text('List', style: TextStyle(fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ]),
+            ],
           ),
-        ),
-      );
+        );
+      },
+    );
+  }
 
-  Widget _horizontalList(Future<List<Movie>> future) => SizedBox(
-        height: 210,
-        child: FutureBuilder<List<Movie>>(
-          future: future,
-          builder: (context, snap) {
-            if (!snap.hasData) return _shimmerHorizontal();
-            if (snap.data!.isEmpty) return const SizedBox();
-            return ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              physics: const BouncingScrollPhysics(),
-              itemCount: snap.data!.length,
-              itemBuilder: (_, i) => _MediaCard(media: snap.data![i]),
-            );
-          },
-        ),
-      );
-
-  Widget _section(String title, VoidCallback? onMore) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-        child: Row(children: [
-          Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+      child: Row(
+        children: [
+          Container(width: 3, height: 16, color: const Color(0xFFF2B04E)),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
           const Spacer(),
-          if (onMore != null)
-            GestureDetector(
-              onTap: onMore,
-              child: const Row(children: [
-                Text('See all', style: TextStyle(color: Color(0xFFFF3B30), fontSize: 13, fontWeight: FontWeight.w600)),
-                Icon(Icons.chevron_right_rounded, color: Color(0xFFFF3B30), size: 18),
-              ]),
-            ),
-        ]),
-      );
+          const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+        ],
+      ),
+    );
+  }
 
-  void _goDetail(Movie m) => Navigator.push(
-      context, MaterialPageRoute(builder: (_) => MovieDetailScreen(movie: m)));
-
-  Widget _shimmerRect({double height = 180}) => Shimmer.fromColors(
-        baseColor: const Color(0xFF1A1A1A),
-        highlightColor: const Color(0xFF2A2A2A),
-        child: Container(height: height, margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))),
-      );
-
-  Widget _shimmerHorizontal() => ListView.builder(
+  Widget _buildLanguageCards() {
+    return SizedBox(
+      height: 70,
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: 5,
-        itemBuilder: (_, _) => Shimmer.fromColors(
-          baseColor: const Color(0xFF1A1A1A),
-          highlightColor: const Color(0xFF2A2A2A),
-          child: Container(width: 130, margin: const EdgeInsets.only(right: 12), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12))),
-        ),
+        itemCount: _languages.length,
+        itemBuilder: (ctx, i) {
+          final lang = _languages[i];
+          return Container(
+            width: 140,
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: lang['color'] as Color,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -10, top: 0, bottom: 0,
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: CachedNetworkImage(
+                      imageUrl: lang['image'] as String,
+                      width: 80, fit: BoxFit.cover,
+                      errorWidget: (_,__,___) => const SizedBox(),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 12, bottom: 12,
+                  child: Text(
+                    lang['name'] as String,
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHorizontalList(Future<List<Filmy4uHDMedia>> future) {
+    return SizedBox(
+      height: 190,
+      child: FutureBuilder<List<Filmy4uHDMedia>>(
+        future: future,
+        builder: (context, snap) {
+          if (!snap.hasData) return const Center(child: CircularProgressIndicator(color: Color(0xFFF2B04E)));
+          if (snap.data!.isEmpty) return const SizedBox();
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            physics: const BouncingScrollPhysics(),
+            itemCount: snap.data!.length,
+            itemBuilder: (_, i) => _MediaCard(media: snap.data![i]),
+          );
+        },
+      ),
+    );
+  }
+
+  void _goDetail(Filmy4uHDMedia m) => Navigator.push(
+      context, MaterialPageRoute(builder: (_) => FilmyDetailScreen(media: m)));
+
+  Widget _shimmerHero() => Shimmer.fromColors(
+        baseColor: const Color(0xFF1A1A1A),
+        highlightColor: const Color(0xFF2A2A2A),
+        child: Container(height: 350, color: Colors.white),
       );
 }
 
 class _MediaCard extends StatelessWidget {
-  final Movie media;
+  final Filmy4uHDMedia media;
   const _MediaCard({required this.media});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MovieDetailScreen(movie: media))),
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FilmyDetailScreen(media: media))),
       child: Container(
-        width: 130,
+        width: 120,
         margin: const EdgeInsets.only(right: 12),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Stack(fit: StackFit.expand, children: [
-                media.posterPath != null
-                    ? Image.network('https://image.tmdb.org/t/p/w200${media.posterPath}', fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: const Color(0xFF1A1A1A)))
-                    : Container(color: const Color(0xFF1A1A1A)),
-                Positioned(top: 6, left: 6, child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
-                  child: Text(media.voteAverage.toStringAsFixed(1), style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                )),
-              ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: CachedNetworkImage(
+                      imageUrl: media.poster,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => Container(color: Colors.white12),
+                    ),
+                  ),
+                  Positioned(
+                    top: 0, right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: const BoxDecoration(
+                        color: Colors.blueAccent,
+                        borderRadius: BorderRadius.only(topRight: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                      ),
+                      child: Text(
+                        media.languages.isNotEmpty ? media.languages.first.toUpperCase() : 'MULTILINGUAL',
+                        style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0, left: 0, right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.7),
+                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8), bottomRight: Radius.circular(8)),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            media.isTVShow ? '${media.totalSeasons ?? 1} season' : 'Movie',
+                            style: const TextStyle(color: Colors.white, fontSize: 9),
+                          ),
+                          const Spacer(),
+                          if (media.rating > 0)
+                            Text(media.rating.toStringAsFixed(1), style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(media.title, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
-          Text(media.releaseDate.split('-')[0], style: const TextStyle(color: Color(0xFF666666), fontSize: 10)),
-        ]),
+            const SizedBox(height: 4),
+            Text(
+              media.title,
+              maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white, fontSize: 11),
+            ),
+          ],
+        ),
       ),
     );
   }

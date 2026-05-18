@@ -74,7 +74,7 @@ class _BannerSliderState extends State<BannerSlider> {
                   height: 6,
                   decoration: BoxDecoration(
                     color: _currentPage == index
-                        ? const Color(0xFFFF3B30)
+                        ? const Color(0xFFF2B04E)
                         : Colors.white.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(3),
                   ),
@@ -161,7 +161,7 @@ class _BannerSlide extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF3B30),
+                      color: const Color(0xFFF2B04E),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(

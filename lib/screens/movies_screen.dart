@@ -75,7 +75,7 @@ class _MoviesScreenState extends State<MoviesScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        color: const Color(0xFFFF3B30),
+        color: const Color(0xFFF2B04E),
         backgroundColor: const Color(0xFF1A1A1A),
         child: _movies.isEmpty && _loading
             ? _shimmerGrid()
@@ -107,7 +107,7 @@ class _MoviesScreenState extends State<MoviesScreen> {
           const SizedBox(height: 16),
           const Text('No movies found', style: TextStyle(color: Colors.grey, fontSize: 16)),
           const SizedBox(height: 12),
-          ElevatedButton(onPressed: _refresh, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF3B30)), child: const Text('Retry')),
+          ElevatedButton(onPressed: _refresh, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF2B04E)), child: const Text('Retry')),
         ]),
       );
 

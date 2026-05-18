@@ -581,52 +581,137 @@ function getStableId(str) {
 }
 
 // Expose Firestore custom catalog to Flutter Mobile App
-app.get('/movies', async (req, res) => {
+app.get('/api/movies', async (req, res) => {
   try {
-    const searchQuery = req.query.search || req.query.query || '';
-    const categoryQuery = req.query.category || '';
-
-    const snapshot = await db.collection('movies').limit(300).get();
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    // We filter for movies (where category != 'Korean Drama' or similar, or just return all that are not tvshows)
+    const snapshot = await db.collection('movies')
+      .where('category', '!=', 'Korean Drama') // simplistic tvshow separation based on current indexer
+      .limit(pageSize)
+      .offset((page - 1) * pageSize)
+      .get();
+      
     let list = [];
     snapshot.forEach(doc => {
       const data = doc.data();
-      const stableId = getStableId(doc.id);
-      
-      const title = data.title || doc.id;
-      const desc = data.description || 'An exciting new premium release loaded instantly from Telegram channels.';
-
-      // Filter locally for case-insensitive match
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        if (!title.toLowerCase().includes(q) && !desc.toLowerCase().includes(q)) {
-          return;
-        }
-      }
-      
-      if (categoryQuery) {
-        if ((data.category || '').toLowerCase() !== categoryQuery.toLowerCase()) {
-          return;
-        }
-      }
-
-      list.push({
-        id: stableId,
-        title: title,
-        overview: desc,
-        poster_path: data.poster_url || '',
-        backdrop_path: data.backdrop_url || data.poster_url || '',
-        vote_average: parseFloat(data.rating || 8.5),
-        release_date: (data.year || 2026).toString(),
-        stream_url: data.stream_url || ''
-      });
+      list.push(formatMediaData(doc.id, data));
     });
     
-    res.json(list);
+    res.json({ total: list.length, page: page, results: list });
   } catch (err) {
     console.error('❌ Failed to fetch movies catalog:', err.message);
     res.status(500).json({ error: "Failed to load movies catalog" });
   }
 });
+
+app.get('/api/tvshows', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    
+    // Simplistic filter for TV Shows based on current indexer logic
+    const snapshot = await db.collection('movies')
+      .where('category', '==', 'Korean Drama')
+      .limit(pageSize)
+      .offset((page - 1) * pageSize)
+      .get();
+      
+    let list = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      list.push(formatMediaData(doc.id, data));
+    });
+    
+    res.json({ total: list.length, page: page, results: list });
+  } catch (err) {
+    console.error('❌ Failed to fetch tvshows catalog:', err.message);
+    res.status(500).json({ error: "Failed to load tvshows catalog" });
+  }
+});
+
+app.get('/api/id/:id', async (req, res) => {
+  try {
+    // Treat id as document ID since TMDB ID isn't directly stored right now
+    const docRef = db.collection('movies').doc(req.params.id);
+    const doc = await docRef.get();
+    
+    if (!doc.exists) {
+      return res.status(404).json({ detail: "Requested details not found" });
+    }
+    
+    res.json(formatMediaData(doc.id, doc.data()));
+  } catch (err) {
+    console.error('❌ Failed to fetch details:', err.message);
+    res.status(500).json({ error: "Failed to load media details" });
+  }
+});
+
+app.get('/api/similar', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    // For similar, we just fetch random or latest for now as a mock, 
+    // since genre data isn't robustly stored in current indexer
+    const snapshot = await db.collection('movies')
+      .limit(pageSize)
+      .offset((page - 1) * pageSize)
+      .get();
+      
+    let list = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      list.push(formatMediaData(doc.id, data));
+    });
+    
+    res.json({ total: list.length, page: page, results: list });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load similar media" });
+  }
+});
+
+app.get('/api/search', async (req, res) => {
+  try {
+    const query = req.query.query || '';
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    
+    // In Firestore, full text search isn't native, so we do a simple title string search
+    // Or fetch all and filter in memory if small, or use >= bounds
+    // For simplicity, we fetch a larger chunk and filter in memory
+    const snapshot = await db.collection('movies').limit(500).get();
+    
+    let list = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const title = data.title || doc.id;
+      if (query && title.toLowerCase().includes(query.toLowerCase())) {
+        list.push(formatMediaData(doc.id, data));
+      }
+    });
+    
+    // Apply pagination
+    const paginated = list.slice((page - 1) * pageSize, page * pageSize);
+    res.json({ total: list.length, page: page, results: paginated });
+  } catch (err) {
+    console.error('❌ Failed to search catalog:', err.message);
+    res.status(500).json({ error: "Failed to search catalog" });
+  }
+});
+
+function formatMediaData(docId, data) {
+  return {
+    id: docId,
+    title: data.title || docId,
+    overview: data.description || 'An exciting new premium release loaded instantly from Telegram channels.',
+    poster_path: data.poster_url || '',
+    backdrop_path: data.backdrop_url || data.poster_url || '',
+    vote_average: parseFloat(data.rating || 8.5),
+    release_date: (data.year || 2026).toString(),
+    streams: data.streams || [],
+    category: data.category || 'Movies'
+  };
+}
 
 // Route to manually trigger indexing of a channel
 app.post('/index-channel', async (req, res) => {

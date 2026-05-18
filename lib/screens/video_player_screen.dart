@@ -75,14 +75,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         ],
         deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
         cupertinoProgressColors: ChewieProgressColors(
-          playedColor: const Color(0xFFFF3B30),
-          handleColor: const Color(0xFFFF3B30),
+          playedColor: const Color(0xFFF2B04E),
+          handleColor: const Color(0xFFF2B04E),
           backgroundColor: Colors.grey.withValues(alpha: 0.3),
           bufferedColor: Colors.white.withValues(alpha: 0.3),
         ),
         materialProgressColors: ChewieProgressColors(
-          playedColor: const Color(0xFFFF3B30),
-          handleColor: const Color(0xFFFF3B30),
+          playedColor: const Color(0xFFF2B04E),
+          handleColor: const Color(0xFFF2B04E),
           backgroundColor: Colors.grey.withValues(alpha: 0.3),
           bufferedColor: Colors.white.withValues(alpha: 0.3),
         ),
@@ -176,7 +176,7 @@ class _LoadingPlaceholder extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Color(0xFFFF3B30), strokeWidth: 2),
+          CircularProgressIndicator(color: Color(0xFFF2B04E), strokeWidth: 2),
           SizedBox(height: 20),
           Text('Loading stream...', style: TextStyle(color: Colors.white70, fontSize: 14)),
         ],
@@ -210,7 +210,7 @@ class _ErrorWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.signal_cellular_connected_no_internet_4_bar_rounded,
-                color: Color(0xFFFF3B30), size: 64),
+                color: Color(0xFFF2B04E), size: 64),
             const SizedBox(height: 20),
             const Text('Stream Unavailable',
                 style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
@@ -264,7 +264,7 @@ class _ErrorWidget extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: onRetry,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF3B30),
+                    backgroundColor: const Color(0xFFF2B04E),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
