@@ -5,10 +5,12 @@ allprojects {
     }
 }
 
-rootProject.buildDir = File(rootProject.projectDir, "../../build")
+val newBuildDir = layout.buildDirectory.dir("../../build")
+layout.buildDirectory.value(newBuildDir)
 
 subprojects {
-    project.buildDir = File(rootProject.buildDir, project.name)
+    val newSubprojectBuildDir = newBuildDir.map { it.dir(project.name) }
+    layout.buildDirectory.value(newSubprojectBuildDir)
 }
 
 subprojects {
@@ -16,5 +18,5 @@ subprojects {
 }
 
 tasks.register<Delete>("clean") {
-    delete(rootProject.buildDir)
+    delete(layout.buildDirectory)
 }
